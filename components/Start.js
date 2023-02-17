@@ -31,110 +31,114 @@ export default class Start extends React.Component {
   render() {
 // This destructuring assignment extracts the background color styles from a variable called backgroundColors.
     const { black, grey, purple, green } = backgroundColors;
-    const keyboardVerticalOffset = Platform.OS === "ios" ? 80 : 0; // adjust the offset for iOS devices
+    const keyboardVerticalOffset = Platform.OS === "ios" ? 50 : 0; // adjust the offset for iOS devices
 // The return statement returns the JSX code for rendering the chat app UI.
-    return (
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior="padding"
-        keyboardVerticalOffset={keyboardVerticalOffset}
-      >
-        <ImageBackground
-          source={require("../assets/background-image.png")}
-          style={[styles.container, styles.image]}
+      return (
+      <View style={styles.container}>
+        <KeyboardAvoidingView
+          style={styles.innerContainer}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={keyboardVerticalOffset}
         >
-          <Text style={styles.title}>Chat App</Text>
+          <ImageBackground
+            source={require("../assets/background-image.png")}
+            style={[styles.container, styles.image]}
+          >
+            <Text style={styles.title}>Chat App</Text>
 
-          <View style={styles.inputBox}>
-            <TextInput
-              style={styles.nameBox}
-              onChangeText={(name) => this.setState({ name })}
-              value={this.state.name}
-              placeholder="Enter your name"
-            />
-            <View>
-              <Text style={styles.colorSelector}>Choose your background</Text>
-              <View style={styles.colorWrapper}>
+            <View style={styles.inputBox}>
+              <TextInput
+                style={styles.nameBox}
+                onChangeText={(name) => this.setState({ name })}
+                value={this.state.name}
+                placeholder="Enter your name"
+              />
+              <View>
+                <Text style={styles.colorSelector}>Choose your background</Text>
+                <View style={styles.colorWrapper}>
                 {/* The TouchableOpacity component allows the user to select different background colors. */}
-                <TouchableOpacity
-                  style={[
-                    styles.color,
-                    black,
+                  <TouchableOpacity
+                    style={[
+                      styles.color,
+                      black,
                     this.state.color === black.backgroundColor
                       ? styles.colorSelected
                       : {},
-                  ]}
+                    ]}
                   onPress={() =>
                     this.setState({ color: black.backgroundColor })
                   }
-                />
+                  />
 
-                <TouchableOpacity
-                  style={[
-                    styles.color,
-                    grey,
+                  <TouchableOpacity
+                    style={[
+                      styles.color,
+                      grey,
                     this.state.color === grey.backgroundColor
                       ? styles.colorSelected
                       : {},
-                  ]}
-                  onPress={() => this.setState({ color: grey.backgroundColor })}
-                />
+                    ]}
+                    onPress={() => this.setState({ color: grey.backgroundColor })}
+                  />
 
-                <TouchableOpacity
-                  style={[
-                    styles.color,
-                    purple,
+                  <TouchableOpacity
+                    style={[
+                      styles.color,
+                      purple,
                     this.state.color === purple.backgroundColor
                       ? styles.colorSelected
                       : {},
-                  ]}
+                    ]}
                   onPress={() =>
                     this.setState({ color: purple.backgroundColor })
                   }
-                />
+                  />
 
-                <TouchableOpacity
-                  style={[
-                    styles.color,
-                    green,
+                  <TouchableOpacity
+                    style={[
+                      styles.color,
+                      green,
                     this.state.color === green.backgroundColor
                       ? styles.colorSelected
                       : {},
-                  ]}
+                    ]}
                   onPress={() =>
                     this.setState({ color: green.backgroundColor })
                   }
-                />
+                  />
+                </View>
               </View>
-            </View>
             {/* The TouchableOpacity component allows the user to navigate to the chat screen. */}
-            <TouchableOpacity
-              style={[styles.nameBox, styles.chatBox]}
-              onPress={() =>
-                this.props.navigation.navigate("Chat", {
-                  name: this.state.name,
-                  color: this.state.color,
-                })
-              }
-            >
+              <TouchableOpacity
+                style={[styles.nameBox, styles.chatBox]}
+                onPress={() =>
+                  this.props.navigation.navigate("Chat", {
+                    name: this.state.name,
+                    color: this.state.color,
+                  })
+                }
+              >
               <Text style={[styles.colorSelector, styles.chatBoxText]}>
                 Start Chatting
               </Text>
-            </TouchableOpacity>
-          </View>
-        </ImageBackground>
+              </TouchableOpacity>
+            </View>
+          </ImageBackground>
         </KeyboardAvoidingView>
+      </View>
     );
   }
 }
-
-
-
 
 // This StyleSheet object defines the styles used in the app.
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+
+  innerContainer: {
+    flex: 1,
+    paddingBottom: 0, // set a paddingBottom to make sure there is enough space at the bottom of the screen
   },
 
   image: {
@@ -152,7 +156,7 @@ const styles = StyleSheet.create({
 
   inputBox: {
     backgroundColor: "#fff",
-    marginBottom: 15,
+    marginBottom: 30,
     height: "44%",
     width: "88%",
     alignItems: "center",
