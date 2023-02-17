@@ -1,6 +1,16 @@
 // This code imports the required React Native components for creating a chat app.
 import React from "react";
-import { View, Text, Button, TextInput, StyleSheet, ImageBackground, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  TextInput,
+  StyleSheet,
+  ImageBackground,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 
 const backgroundColors = {
   black: { backgroundColor: "#000000" },
@@ -21,9 +31,14 @@ export default class Start extends React.Component {
   render() {
 // This destructuring assignment extracts the background color styles from a variable called backgroundColors.
     const { black, grey, purple, green } = backgroundColors;
+    const keyboardVerticalOffset = Platform.OS === "ios" ? 80 : 0; // adjust the offset for iOS devices
 // The return statement returns the JSX code for rendering the chat app UI.
     return (
-      <View style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior="padding"
+        keyboardVerticalOffset={keyboardVerticalOffset}
+      >
         <ImageBackground
           source={require("../assets/background-image.png")}
           style={[styles.container, styles.image]}
@@ -108,10 +123,11 @@ export default class Start extends React.Component {
             </TouchableOpacity>
           </View>
         </ImageBackground>
-      </View>
+        </KeyboardAvoidingView>
     );
   }
 }
+
 
 
 
