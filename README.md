@@ -1,8 +1,5 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>React Native Chat App</title>
-  </head>
   <body>
     <h1>React Native Chat App</h1>
     <p>
