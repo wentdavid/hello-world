@@ -1,6 +1,15 @@
 import React from "react";
-import { View, Platform, KeyboardAvoidingView, Text, Button, TextInput, StyleSheet } from "react-native";
-import { GiftedChat } from "react-native-gifted-chat";
+import {
+  View,
+  Platform,
+  KeyboardAvoidingView,
+  Text,
+  Button,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import { GiftedChat, Bubble } from "react-native-gifted-chat";
 
 
 export default class Chat extends React.Component {
@@ -20,7 +29,7 @@ export default class Chat extends React.Component {
         },
         {
           _id: 2,
-          text: "This is a system message",
+          text: "You entered the chat",
           createdAt: new Date(),
           system: true,
         },
@@ -43,7 +52,7 @@ export default class Chat extends React.Component {
             backgroundColor: "white",
           },
           right: {
-            backgroundColor: "#000",
+            backgroundColor: "blue",
           },
         }}
       />
@@ -61,6 +70,7 @@ export default class Chat extends React.Component {
           title="Go to Start"
           onPress={() => this.props.navigation.navigate("Start")}
         />
+        
         <GiftedChat
           renderBubble={this.renderBubble.bind(this)}
           messages={this.state.messages}
@@ -72,6 +82,17 @@ export default class Chat extends React.Component {
         {Platform.OS === "android" ? (
           <KeyboardAvoidingView behavior="height" />
         ) : null}
+
+        <TouchableOpacity
+          accessible={true}
+          accessibilityLabel="More options"
+          accessibilityHint="Lets you choose to send an image or your geolocation."
+          accessibilityRole="button"
+          onPress={this._onPress}
+        >
+          <View style={styles.button}></View>
+        </TouchableOpacity>
+
       </View>
     );
   }
