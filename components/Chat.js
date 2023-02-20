@@ -18,6 +18,12 @@ export default class Chat extends React.Component {
             avatar: "https://placeimg.com/140/140/any",
           },
         },
+        {
+          _id: 2,
+          text: "This is a system message",
+          createdAt: new Date(),
+          system: true,
+        },
       ],
     };
   }
@@ -26,6 +32,19 @@ export default class Chat extends React.Component {
     this.setState((previousState) => ({
       messages: GiftedChat.append(previousState.messages, messages),
     }));
+  }
+
+  renderBubble(props) {
+    return (
+      <Bubble
+        {...props}
+        wrapperStyle={{
+          right: {
+            backgroundColor: "#000",
+          },
+        }}
+      />
+    );
   }
 
   render() {
@@ -40,14 +59,16 @@ export default class Chat extends React.Component {
           onPress={() => this.props.navigation.navigate("Start")}
         />
         <GiftedChat
+          renderBubble={this.renderBubble.bind(this)}
           messages={this.state.messages}
           onSend={(messages) => this.onSend(messages)}
           user={{
             _id: 1,
           }}
         />
-        {Platform.OS === "android" ? <KeyboardAvoidingView behavior="height" /> : null}
-
+        {Platform.OS === "android" ? (
+          <KeyboardAvoidingView behavior="height" />
+        ) : null}
       </View>
     );
   }
