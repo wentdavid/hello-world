@@ -4,20 +4,14 @@ import {
   Platform,
   KeyboardAvoidingView,
   Text,
-  Button,
-  TextInput,
   StyleSheet,
-  TouchableOpacity,
 } from "react-native";
 import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
-import * as Permissions from "expo-permissions";
-import * as ImagePicker from "expo-image-picker";
-import * as Location from "expo-location";
 import MapView from "react-native-maps";
-import { Audio } from "expo-av";
-
+import { ActionSheetProvider } from "@expo/react-native-action-sheet";
+import CustomActions from "./CustomActions";
 
 const firebase = require("firebase");
 require("firebase/firestore");
@@ -35,7 +29,8 @@ export default class Chat extends React.Component {
       },
       image: null,
       isConnected: false,
-      text: "",
+      loggedInText: "You are getting logged in...",
+      location: null,
     };
 
     if (!firebase.apps.length) {
@@ -87,8 +82,9 @@ export default class Chat extends React.Component {
             user: {
               _id: user.uid,
               name: name,
-              avatar: "https://placeimg.com/140/140/any",
+              avatar: "",
             },
+            loggedInText: "",
           });
           this.unsubscribe = this.referenceChatMessages
             .orderBy("createdAt", "desc")
@@ -102,36 +98,6 @@ export default class Chat extends React.Component {
       }
     });
   }
-
-  componentWillUnmount() {
-    if (this.isConnected) {
-      this.unsubscribe();
-      this.authUnsubscribe();
-    }
-  }
-
-  onSend(messages = []) {
-    this.setState(
-      (previousState) => ({
-        messages: GiftedChat.append(previousState.messages, messages),
-      }),
-      () => {
-        this.addMessage();
-        this.saveMessages();
-      }
-    );
-  }
-
-  addMessage = () => {
-    const message = this.state.messages[0];
-    this.referenceChatMessages.add({
-      uid: this.state.uid,
-      _id: message._id,
-      text: message.text || "",
-      createdAt: message.createdAt,
-      user: this.state.user,
-    });
-  };
 
   async saveMessages() {
     try {
@@ -155,54 +121,30 @@ export default class Chat extends React.Component {
     }
   }
 
-  pickImage = async () => {
-    const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-
-    if (status === "granted") {
-      let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: "Images",
-      }).catch((error) => console.log(error));
-
-      if (!result.cancelled) {
-        this.setState({
-          image: result,
-        });
+  onSend(messages = []) {
+    this.setState(
+      (previousState) => ({
+        messages: GiftedChat.append(previousState.messages, messages),
+      }),
+      () => {
+        this.addMessage();
+        this.saveMessages();
       }
-    }
+    );
+  }
+
+  addMessage = () => {
+    const message = this.state.messages[0];
+    this.referenceChatMessages.add({
+      uid: this.state.uid,
+      _id: message._id,
+      text: message.text || "",
+      createdAt: message.createdAt,
+      user: message.user,
+      image: message.image || null,
+      location: message.location || null,
+    });
   };
-
-  takePhoto = async () => {
-    const { status } = await Permissions.askAsync(Permissions.CAMERA);
-
-    if (status === "granted") {
-      let result = await ImagePicker.launchCameraAsync({
-        mediaTypes: "Images",
-      }).catch((error) => console.log(error));
-
-      if (!result.cancelled) {
-        this.setState({
-          image: result,
-        });
-      }
-    }
-  };
-
-  getLocation = async () => {
-    const { status } = await Permissions.askAsync(Permissions.LOCATION);
-
-    if (status === "granted") {
-      let result = await Location.getCurrentPositionAsync({}).catch(
-        (error) => console.log(error)
-      );
-
-      if (result) {
-        this.setState({
-          location: result,
-        });
-      }
-    }
-  };
-
 
   onCollectionUpdate = (querySnapshot) => {
     if (!this.state.isConnected) return;
@@ -218,6 +160,8 @@ export default class Chat extends React.Component {
           name: data.user.name,
           avatar: data.user.avatar || "",
         },
+        image: data.image || null,
+        location: data.location || null,
       });
     });
     this.setState({
@@ -225,12 +169,21 @@ export default class Chat extends React.Component {
     });
   };
 
-  renderInputToolbar(props) {
-    if (this.state.isConnected == false) {
+  componentWillUnmount() {
+    if (this.isConnected) {
+      this.unsubscribe();
+      this.authUnsubscribe();
+    }
+  }
+
+  renderInputToolbar = (props) => {
+    console.log("renderInputToolbar --> props", props.isConnected);
+    if (props.isConnected === false) {
+      return <InputToolbar {...props} />;
     } else {
       return <InputToolbar {...props} />;
     }
-  }
+  };
 
   renderBubble(props) {
     return (
@@ -247,7 +200,26 @@ export default class Chat extends React.Component {
       />
     );
   }
-  
+
+  renderCustomActions = (props) => <CustomActions {...props} />;
+
+  renderCustomView(props) {
+    const { currentMessage } = props;
+    if (currentMessage.location) {
+      return (
+        <MapView
+          style={{ width: 150, height: 100, borderRadius: 13, margin: 3 }}
+          region={{
+            latitude: currentMessage.location.latitude,
+            longitude: currentMessage.location.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+        />
+      );
+    }
+    return null;
+  }
 
   render() {
     let color = this.props.route.params.color;
@@ -255,98 +227,25 @@ export default class Chat extends React.Component {
     this.props.navigation.setOptions({ title: name });
 
     return (
-      <View style={[styles.container, { backgroundColor: color }]}>
-        <Button
-          title="Go to Start"
-          onPress={() => this.props.navigation.navigate("Start")}
-        />
+      <ActionSheetProvider>
+        <View style={[styles.container, { backgroundColor: color }]}>
+          <Text>{this.state.loggedInText}</Text>
 
-        <Text>{this.state.text}</Text>
-        <Button
-          title="Record"
-          onPress={async () => {
-            try {
-              await Permissions.askAsync(Permissions.AUDIO_RECORDING);
-              await Audio.setAudioModeAsync({
-                allowsRecordingIOS: true,
-                interruptionModeIOS:
-                  Audio.INTERRUPTION_MODE_IOS_MIX_WITH_OTHERS,
-                playsInSilentModeIOS: true,
-                shouldDuckAndroid: false,
-                interruptionModeAndroid:
-                  Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
-              });
-
-              const recording = new Audio.Recording();
-              await recording.prepareToRecordAsync(
-                Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY
-              );
-              await recording.startAsync();
-              this.setState({ text: "started recording" });
-              setTimeout(async () => {
-                try {
-                  await recording.stopAndUnloadAsync();
-                  this.setState({ text: "stopped recording" });
-                } catch (e) {
-                  this.setState({ text: `error: ${e.message}` });
-                }
-              }, 4000); // increase to 1000 for it to work
-            } catch (e) {
-              this.setState({ text: `error: ${e.message}` });
-            }
-          }}
-        />
-
-        <Button title="Get my location" onPress={this.getLocation} />
-
-        {this.state.location && (
-          <MapView
-            style={{ width: "100%", height: "50%" }}
-            region={{
-              latitude: this.state.location.coords.latitude,
-              longitude: this.state.location.coords.longitude,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
-            }}
+          <GiftedChat
+            renderBubble={this.renderBubble.bind(this)}
+            renderActions={this.renderCustomActions}
+            renderCustomView={this.renderCustomView}
+            renderInputToolbar={this.renderInputToolbar.bind(this)}
+            messages={this.state.messages}
+            onSend={(messages) => this.onSend(messages)}
+            user={{ _id: this.state.uid }}
+            isConnected={this.state.isConnected}
           />
-        )}
-
-        <GiftedChat
-          renderBubble={this.renderBubble.bind(this)}
-          renderActions={this.renderCustomActions}
-          messages={this.state.messages}
-          renderInputToolbar={this.renderInputToolbar.bind(this)}
-          onSend={(messages) => this.onSend(messages)}
-          user={this.state.user}
-        />
-        {Platform.OS === "android" ? (
-          <KeyboardAvoidingView behavior="height" />
-        ) : null}
-
-        {this.state.image && (
-          <Image
-            source={{ uri: this.state.image.uri }}
-            style={{ width: 200, height: 200 }}
-          />
-        )}
-
-        <Button
-          title="Pick an image from the library"
-          onPress={this.pickImage}
-        />
-
-        <Button title="Take a photo" onPress={this.takePhoto} />
-
-        <TouchableOpacity
-          accessible={true}
-          accessibilityLabel="More options"
-          accessibilityHint="Lets you choose to send an image or your geolocation."
-          accessibilityRole="button"
-          onPress={this._onPress}
-        >
-          <View style={styles.button}></View>
-        </TouchableOpacity>
-      </View>
+          {Platform.OS === "android" ? (
+            <KeyboardAvoidingView behavior="height" />
+          ) : null}
+        </View>
+      </ActionSheetProvider>
     );
   }
 }
