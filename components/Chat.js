@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { GiftedChat, Bubble } from "react-native-gifted-chat";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const firebase = require("firebase");
 require("firebase/firestore");
