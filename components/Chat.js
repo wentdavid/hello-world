@@ -27,7 +27,7 @@ export default class Chat extends React.Component {
         name: "",
         avatar: "",
       },
-      loggedInText: "Please wait, you are getting logged in",
+      isConnected: false,
     };
 
     if (!firebase.apps.length) {
@@ -58,6 +58,7 @@ export default class Chat extends React.Component {
   componentDidMount() {
     let name = this.props.route.params.name;
     this.props.navigation.setOptions({ title: name });
+    this.getMessages();
 
     NetInfo.fetch().then((connection) => {
       if (connection.isConnected) {
@@ -78,13 +79,14 @@ export default class Chat extends React.Component {
             user: {
               _id: user.uid,
               name: name,
+              avatar: "https://placeimg.com/140/140/any",
             },
-            loggedInText: "",
           });
           this.unsubscribe = this.referenceChatMessages
             .orderBy("createdAt", "desc")
             .onSnapshot(this.onCollectionUpdate);
         });
+
       } else {
         this.setState({ isConnected: false });
         console.log("offline");
@@ -120,7 +122,7 @@ export default class Chat extends React.Component {
       _id: message._id,
       text: message.text || "",
       createdAt: message.createdAt,
-      user: message.user,
+      user: this.state.user,
     });
   };
 
@@ -147,6 +149,7 @@ export default class Chat extends React.Component {
   }
 
   onCollectionUpdate = (querySnapshot) => {
+    if (!this.state.isConnected) return;
     const messages = [];
     querySnapshot.forEach((doc) => {
       let data = doc.data();
