@@ -258,6 +258,7 @@ export default class Chat extends React.Component {
           <Text>{this.state.loggedInText}</Text>
 
           <GiftedChat
+            renderSystemMessage={this.renderSystemMessage.bind(this)}
             renderBubble={this.renderBubble.bind(this)}
             renderActions={this.renderCustomActions}
             renderCustomView={this.renderCustomView}
