@@ -16,6 +16,12 @@ import CustomActions from "./CustomActions";
 const firebase = require("firebase");
 require("firebase/firestore");
 
+let offlineAlert = {
+  _id: 1,
+  text: "",
+  system: true,
+};
+
 export default class Chat extends React.Component {
   constructor() {
     super();
@@ -91,10 +97,16 @@ export default class Chat extends React.Component {
             .onSnapshot(this.onCollectionUpdate);
         });
       } else {
-        this.setState({ isConnected: false });
-        console.log("offline");
+        
+        offlineAlert = {
+          _id: 1,
+          text: 'You are currently offline. Messages can\'t be updated or sent.',
+          system: true
+        }
 
         this.getMessages();
+        this.getUser();
+        this.setState({ isConnected: false });
       }
     });
   }
@@ -176,6 +188,13 @@ export default class Chat extends React.Component {
     }
   }
 
+  renderSystemMessage(props) {
+    if (!this.state.isConnected) {
+      return <SystemMessage {...props} textStyle={styles.systemMessage} />;
+    } else {
+    }
+  }
+
   renderInputToolbar = (props) => {
     console.log("renderInputToolbar --> props", props.isConnected);
     if (props.isConnected === false) {
@@ -201,7 +220,14 @@ export default class Chat extends React.Component {
     );
   }
 
+  renderSystemMessage(props) {
+    if (!this.state.isConnected) {
+      return <SystemMessage {...props} textStyle={styles.systemMessage} />;
+    } else {}
+  }
+
   renderCustomActions = (props) => <CustomActions {...props} />;
+
 
   renderCustomView(props) {
     const { currentMessage } = props;
@@ -236,7 +262,11 @@ export default class Chat extends React.Component {
             renderActions={this.renderCustomActions}
             renderCustomView={this.renderCustomView}
             renderInputToolbar={this.renderInputToolbar.bind(this)}
-            messages={this.state.messages}
+            messages={
+              this.state.isConnected
+                ? this.state.messages
+                : [offlineAlert, ...this.state.messages]
+            }
             onSend={(messages) => this.onSend(messages)}
             user={{ _id: this.state.uid }}
             isConnected={this.state.isConnected}
