@@ -12,6 +12,8 @@ import {
 import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
+import * as Permissions from "expo-permissions";
+import * as ImagePicker from "expo-image-picker";
 
 const firebase = require("firebase");
 require("firebase/firestore");
@@ -27,6 +29,7 @@ export default class Chat extends React.Component {
         name: "",
         avatar: "",
       },
+      image: null,
       isConnected: false,
     };
 
@@ -86,7 +89,6 @@ export default class Chat extends React.Component {
             .orderBy("createdAt", "desc")
             .onSnapshot(this.onCollectionUpdate);
         });
-
       } else {
         this.setState({ isConnected: false });
         console.log("offline");
@@ -147,6 +149,38 @@ export default class Chat extends React.Component {
       console.log(error.message);
     }
   }
+
+  pickImage = async () => {
+    const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+
+    if (status === "granted") {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: "Images",
+      }).catch((error) => console.log(error));
+
+      if (!result.cancelled) {
+        this.setState({
+          image: result,
+        });
+      }
+    }
+  };
+
+  takePhoto = async () => {
+    const { status } = await Permissions.askAsync(Permissions.CAMERA);
+
+    if (status === "granted") {
+      let result = await ImagePicker.launchCameraAsync({
+        mediaTypes: "Images",
+      }).catch((error) => console.log(error));
+
+      if (!result.cancelled) {
+        this.setState({
+          image: result,
+        });
+      }
+    }
+  };
 
   onCollectionUpdate = (querySnapshot) => {
     if (!this.state.isConnected) return;
@@ -215,6 +249,20 @@ export default class Chat extends React.Component {
           <KeyboardAvoidingView behavior="height" />
         ) : null}
 
+        {this.state.image && (
+          <Image
+            source={{ uri: this.state.image.uri }}
+            style={{ width: 200, height: 200 }}
+          />
+        )}
+
+        <Button
+          title="Pick an image from the library"
+          onPress={this.pickImage}
+        />
+
+        <Button title="Take a photo" onPress={this.takePhoto} />
+
         <TouchableOpacity
           accessible={true}
           accessibilityLabel="More options"
@@ -234,4 +282,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-    
