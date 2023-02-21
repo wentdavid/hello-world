@@ -4,14 +4,14 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import * as Permissions from "expo-permissions";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
-import { connect } from "cookies";
+import { connectActionSheet } from "@expo/react-native-action-sheet";
 
 const firebase = require("firebase");
 require("firebase/firestore");
 
-export default class CustomActions extends React.Component {
+class CustomActions extends React.Component {
   pickImage = async () => {
-    const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+    const { status } = await Permissions.askAsync(Permissions.MEDIA_LIBRARY);
 
     if (status === "granted") {
       let result = await ImagePicker.launchImageLibraryAsync({
@@ -19,9 +19,8 @@ export default class CustomActions extends React.Component {
       }).catch((error) => console.log(error));
 
       if (!result.cancelled) {
-        this.setState({
-          image: result,
-        });
+        const imageUrl = await this.uploadImageFetch(result.uri);
+        this.props.onSend({ image: imageUrl });
       }
     }
   };
@@ -29,35 +28,38 @@ export default class CustomActions extends React.Component {
   takePhoto = async () => {
     const { status } = await Permissions.askAsync(
       Permissions.CAMERA,
-      Permissions.CAMERA_ROLL
+      Permissions.MEDIA_LIBRARY
     );
 
     if (status === "granted") {
-      let result = await ImagePicker.launchCameraAsync({
+      const result = await ImagePicker.launchCameraAsync({
         mediaTypes: "Images",
       }).catch((error) => console.log(error));
 
       if (!result.cancelled) {
-        this.setState({
-          image: result,
-        });
+        const imageUrl = await this.uploadImageFetch(result.uri);
+        this.props.onSend({ image: imageUrl });
       }
     }
   };
 
   getLocation = async () => {
-    const { status } = await Permissions.askAsync(Permissions.LOCATION);
+    try {
+      const { status } = await Permissions.askAsync(Permissions.LOCATION);
 
-    if (status === "granted") {
-      let result = await Location.getCurrentPositionAsync({}).catch((error) =>
-        console.log(error)
-      );
-
-      if (result) {
-        this.setState({
-          location: result,
-        });
+      if (status === "granted") {
+        const result = await Location.getCurrentPositionAsync({});
+        if (result) {
+          this.props.onSend({
+            location: {
+              longitude: result.coords.longitude,
+              latitude: result.coords.latitude,
+            },
+          });
+        }
       }
+    } catch (error) {
+      console.log(error.message);
     }
   };
 
@@ -75,7 +77,6 @@ export default class CustomActions extends React.Component {
       xhr.open("GET", uri, true);
       xhr.send(null);
     });
-
 
     const imageNameBefore = uri.split("/");
     const imageName = imageNameBefore[imageNameBefore.length - 1];
@@ -97,7 +98,7 @@ export default class CustomActions extends React.Component {
       "Cancel",
     ];
     const cancelButtonIndex = options.length - 1;
-    this.context.actionSheet().showActionSheetWithOptions(
+    this.props.showActionSheetWithOptions(
       {
         options,
         cancelButtonIndex,
@@ -106,7 +107,7 @@ export default class CustomActions extends React.Component {
         switch (buttonIndex) {
           case 0:
             console.log("user wants to pick an image");
-            return this.imagePicker();
+            return this.pickImage();
           case 1:
             console.log("user wants to take a photo");
             return this.takePhoto();
@@ -123,7 +124,7 @@ export default class CustomActions extends React.Component {
       <TouchableOpacity
         accessible={true}
         accessibilityLabel="More options"
-        accessibilityHint="Let’s you choose to send an image or your geolocation."
+        accessibilityHint="Send an image or your geolocation."
         style={[styles.container]}
         onPress={this.onActionPress}
       >
@@ -157,8 +158,11 @@ const styles = StyleSheet.create({
   },
 });
 
-CustomActions.contextTypes = {
-  actionSheet: PropTypes.func,
+CustomActions.propTypes = {
+  showActionSheetWithOptions: PropTypes.func.isRequired,
+  onSend: PropTypes.func.isRequired,
+  wrapperStyle: PropTypes.object,
+  iconTextStyle: PropTypes.object,
 };
 
-CustomActions = connectActionSheet(CustomActions);
+export default connectActionSheet(CustomActions);
