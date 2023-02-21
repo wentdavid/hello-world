@@ -14,6 +14,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
 import * as Permissions from "expo-permissions";
 import * as ImagePicker from "expo-image-picker";
+import * as Location from "expo-location";
+import MapView from "react-native-maps";
+import { Audio } from "expo-av";
+
 
 const firebase = require("firebase");
 require("firebase/firestore");
@@ -31,6 +35,7 @@ export default class Chat extends React.Component {
       },
       image: null,
       isConnected: false,
+      text: "",
     };
 
     if (!firebase.apps.length) {
@@ -182,6 +187,23 @@ export default class Chat extends React.Component {
     }
   };
 
+  getLocation = async () => {
+    const { status } = await Permissions.askAsync(Permissions.LOCATION);
+
+    if (status === "granted") {
+      let result = await Location.getCurrentPositionAsync({}).catch(
+        (error) => console.log(error)
+      );
+
+      if (result) {
+        this.setState({
+          location: result,
+        });
+      }
+    }
+  };
+
+
   onCollectionUpdate = (querySnapshot) => {
     if (!this.state.isConnected) return;
     const messages = [];
@@ -225,6 +247,7 @@ export default class Chat extends React.Component {
       />
     );
   }
+  
 
   render() {
     let color = this.props.route.params.color;
@@ -238,8 +261,59 @@ export default class Chat extends React.Component {
           onPress={() => this.props.navigation.navigate("Start")}
         />
 
+        <Text>{this.state.text}</Text>
+        <Button
+          title="Record"
+          onPress={async () => {
+            try {
+              await Permissions.askAsync(Permissions.AUDIO_RECORDING);
+              await Audio.setAudioModeAsync({
+                allowsRecordingIOS: true,
+                interruptionModeIOS:
+                  Audio.INTERRUPTION_MODE_IOS_MIX_WITH_OTHERS,
+                playsInSilentModeIOS: true,
+                shouldDuckAndroid: false,
+                interruptionModeAndroid:
+                  Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
+              });
+
+              const recording = new Audio.Recording();
+              await recording.prepareToRecordAsync(
+                Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY
+              );
+              await recording.startAsync();
+              this.setState({ text: "started recording" });
+              setTimeout(async () => {
+                try {
+                  await recording.stopAndUnloadAsync();
+                  this.setState({ text: "stopped recording" });
+                } catch (e) {
+                  this.setState({ text: `error: ${e.message}` });
+                }
+              }, 4000); // increase to 1000 for it to work
+            } catch (e) {
+              this.setState({ text: `error: ${e.message}` });
+            }
+          }}
+        />
+
+        <Button title="Get my location" onPress={this.getLocation} />
+
+        {this.state.location && (
+          <MapView
+            style={{ width: "100%", height: "50%" }}
+            region={{
+              latitude: this.state.location.coords.latitude,
+              longitude: this.state.location.coords.longitude,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            }}
+          />
+        )}
+
         <GiftedChat
           renderBubble={this.renderBubble.bind(this)}
+          renderActions={this.renderCustomActions}
           messages={this.state.messages}
           renderInputToolbar={this.renderInputToolbar.bind(this)}
           onSend={(messages) => this.onSend(messages)}
