@@ -9,13 +9,14 @@ import { connectActionSheet } from "@expo/react-native-action-sheet";
 const firebase = require("firebase");
 require("firebase/firestore");
 
-class CustomActions extends React.Component {
+export default class CustomActions extends React.Component {
+
   pickImage = async () => {
     const { status } = await Permissions.askAsync(Permissions.MEDIA_LIBRARY);
 
     if (status === "granted") {
       let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: "Images",
+        mediaTypes: "All",
       }).catch((error) => console.log(error));
 
       if (!result.cancelled) {
@@ -33,7 +34,7 @@ class CustomActions extends React.Component {
 
     if (status === "granted") {
       const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: "Images",
+        mediaTypes: "All",
       }).catch((error) => console.log(error));
 
       if (!result.cancelled) {
@@ -165,4 +166,8 @@ CustomActions.propTypes = {
   iconTextStyle: PropTypes.object,
 };
 
-export default connectActionSheet(CustomActions);
+CustomActions.contextTypes = {
+  actionSheet: PropTypes.func,
+};
+
+CustomActions = connectActionSheet(CustomActions);

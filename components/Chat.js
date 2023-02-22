@@ -13,7 +13,7 @@ import MapView from "react-native-maps";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import CustomActions from "./CustomActions";
 
-const firebase = require("firebase");
+const firebase = require("firebase");    
 require("firebase/firestore");
 
 let offlineAlert = {
@@ -60,7 +60,7 @@ export default class Chat extends React.Component {
         messages: JSON.parse(messages),
       });
     } catch (error) {
-      console.log(error.message);
+      console.log("Get Message -> ", error);
     }
   }
 
@@ -94,7 +94,7 @@ export default class Chat extends React.Component {
           });
           this.unsubscribe = this.referenceChatMessages
             .orderBy("createdAt", "desc")
-            .onSnapshot(this.onCollectionUpdate);
+            .onSnapshot(this.onCollectionUpdate, (error) => {console.log("Snapshottt", error)});
         });
       } else {
         
@@ -118,7 +118,7 @@ export default class Chat extends React.Component {
         JSON.stringify(this.state.messages)
       );
     } catch (error) {
-      console.log(error.message);
+      console.log("Save Message -> ", error);
     }
   }
 
