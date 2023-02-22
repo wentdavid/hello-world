@@ -16,7 +16,7 @@ export default class CustomActions extends React.Component {
 
     if (status === "granted") {
       let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: "All",
+        mediaTypes: "Images",
       }).catch((error) => console.log(error));
 
       if (!result.cancelled) {
@@ -34,7 +34,7 @@ export default class CustomActions extends React.Component {
 
     if (status === "granted") {
       const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: "All",
+        mediaTypes: "Images",
       }).catch((error) => console.log(error));
 
       if (!result.cancelled) {
