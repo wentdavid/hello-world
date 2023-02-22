@@ -6,14 +6,15 @@ import {
   Text,
   StyleSheet,
 } from "react-native";
-import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { GiftedChat, Bubble, InputToolbar, SystemMessage } from "react-native-gifted-chat";
 import NetInfo from "@react-native-community/netinfo";
 import MapView from "react-native-maps";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import CustomActions from "./CustomActions";
+import { getMessages, saveMessages, deleteMessages } from "../helpers/asyncStorage";
 
-const firebase = require("firebase");    
+
+const firebase = require("firebase");
 require("firebase/firestore");
 
 let offlineAlert = {
@@ -52,22 +53,18 @@ export default class Chat extends React.Component {
     this.referenceChatMessages = firebase.firestore().collection("messages");
   }
 
-  async getMessages() {
-    let messages = "";
-    try {
-      messages = (await AsyncStorage.getItem("messages")) || [];
-      this.setState({
-        messages: JSON.parse(messages),
-      });
-    } catch (error) {
-      console.log("Get Message -> ", error);
-    }
-  }
-
-  componentDidMount() {
+  async componentDidMount() {
     let name = this.props.route.params.name;
     this.props.navigation.setOptions({ title: name });
-    this.getMessages();
+
+    try {
+      const messages = await getMessages();
+      this.setState({
+        messages: messages,
+      });
+    } catch (error) {
+      console.log("Error getting messages", error);
+    }
 
     NetInfo.fetch().then((connection) => {
       if (connection.isConnected) {
@@ -88,61 +85,26 @@ export default class Chat extends React.Component {
             user: {
               _id: user.uid,
               name: name,
-              avatar: "",
+              avatar: "https://placeimg.com/140/140/any",
             },
             loggedInText: "",
           });
           this.unsubscribe = this.referenceChatMessages
             .orderBy("createdAt", "desc")
-            .onSnapshot(this.onCollectionUpdate, (error) => {console.log("Snapshottt", error)});
+            .onSnapshot(this.onCollectionUpdate, (error) => {
+              console.log("Snapshot", error);
+            });
         });
       } else {
-        
         offlineAlert = {
           _id: 1,
-          text: 'You are currently offline. Messages can\'t be updated or sent.',
-          system: true
-        }
+          text: "You are currently offline. Messages can't be updated or sent.",
+          system: true,
+        };
 
-        this.getMessages();
-        this.getUser();
         this.setState({ isConnected: false });
       }
     });
-  }
-
-  async saveMessages() {
-    try {
-      await AsyncStorage.setItem(
-        "messages",
-        JSON.stringify(this.state.messages)
-      );
-    } catch (error) {
-      console.log("Save Message -> ", error);
-    }
-  }
-
-  async deleteMessages() {
-    try {
-      await AsyncStorage.removeItem("messages");
-      this.setState({
-        messages: [],
-      });
-    } catch (error) {
-      console.log(error.message);
-    }
-  }
-
-  onSend(messages = []) {
-    this.setState(
-      (previousState) => ({
-        messages: GiftedChat.append(previousState.messages, messages),
-      }),
-      () => {
-        this.addMessage();
-        this.saveMessages();
-      }
-    );
   }
 
   addMessage = () => {
@@ -188,10 +150,23 @@ export default class Chat extends React.Component {
     }
   }
 
+  onSend(messages = []) {
+    this.setState(
+      (previousState) => ({
+        messages: GiftedChat.append(previousState.messages, messages),
+      }),
+      async () => {
+        await saveMessages(this.state.messages);
+        this.addMessage();
+      }
+    );
+  }
+
   renderSystemMessage(props) {
     if (!this.state.isConnected) {
       return <SystemMessage {...props} textStyle={styles.systemMessage} />;
     } else {
+      return null;
     }
   }
 
@@ -220,14 +195,7 @@ export default class Chat extends React.Component {
     );
   }
 
-  renderSystemMessage(props) {
-    if (!this.state.isConnected) {
-      return <SystemMessage {...props} textStyle={styles.systemMessage} />;
-    } else {}
-  }
-
   renderCustomActions = (props) => <CustomActions {...props} />;
-
 
   renderCustomView(props) {
     const { currentMessage } = props;
@@ -251,7 +219,6 @@ export default class Chat extends React.Component {
     let color = this.props.route.params.color;
     let name = this.props.route.params.name;
     this.props.navigation.setOptions({ title: name });
-
     return (
       <ActionSheetProvider>
         <View style={[styles.container, { backgroundColor: color }]}>
@@ -263,6 +230,8 @@ export default class Chat extends React.Component {
             renderActions={this.renderCustomActions}
             renderCustomView={this.renderCustomView}
             renderInputToolbar={this.renderInputToolbar.bind(this)}
+            showAvatarForEveryMessage={true}
+            renderUsernameOnMessage={true}
             messages={
               this.state.isConnected
                 ? this.state.messages
@@ -271,6 +240,9 @@ export default class Chat extends React.Component {
             onSend={(messages) => this.onSend(messages)}
             user={{ _id: this.state.uid }}
             isConnected={this.state.isConnected}
+            accessible={true}
+            accessibilityLabel="Chat text input field"
+            accessibilityHint='Enter your message here and press "Send" on the right to send your message '
           />
           {Platform.OS === "android" ? (
             <KeyboardAvoidingView behavior="height" />
@@ -286,3 +258,5 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
+
+
