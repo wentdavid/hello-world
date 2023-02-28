@@ -56,7 +56,8 @@
       use Android Studio to test the app on an Android emulator or physical
       device.
     </p>
-    <h2>Dependencies</h2>
+    <img width=25% src="https://user-images.githubusercontent.com/112701190/221928827-6966121d-0810-4f0b-9669-d312b2604508.mov">
+  <h2>Dependencies</h2>
     <ul>
       <li>React Native</li>
       <li>Firebase</li>
