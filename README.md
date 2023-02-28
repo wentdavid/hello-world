@@ -5,14 +5,14 @@
     <p>This is a mobile chat app built with React Native and Firebase. It allows users to sign in with their name, choose a background color, and chat with other users in real-time. The app also has features for sending images and locations, and it works offline with local storage.</p>
     <img width=25% src="https://user-images.githubusercontent.com/112701190/221927945-725716bf-92ba-411c-ab8c-7de39511b5d5.gif">
     <ul>
-  <li><a href="https://github.com/wentdavid/hello-world/blob/main/README.md#features">Features</a></li>
-  <li><a href="https://github.com/wentdavid/hello-world/blob/main/README.md#user-stories">User Stories</a></li>
-  <li><a href="https://github.com/wentdavid/hello-world/blob/main/README.md#getting-started">Getting Started</a></li>
-  <li><a href="https://github.com/wentdavid/hello-world/blob/main/README.md#database-configuration">Database Configuration</a></li>
-  <li><a href="https://github.com/wentdavid/hello-world/blob/main/README.md#running-the-app">Running the App</a></li>
-  <li><a href="https://github.com/wentdavid/hello-world/blob/main/README.md#dependencies">Dependencies</a></li>
-  <li><a href="https://github.com/wentdavid/hello-world/blob/main/README.md#dependencies">Dependencies</a></li>
-  <li><a href="https://github.com/wentdavid/hello-world/blob/main/README.md#license">License</a></li>
+  <li><a href="https://github.com/wentdavid/hello-world#features">Features</a></li>
+  <li><a href="https://github.com/wentdavid/hello-world#user-stories">User Stories</a></li>
+  <li><a href="https://github.com/wentdavid/hello-world#getting-started">Getting Started</a></li>
+  <li><a href="https://github.com/wentdavid/hello-world#database-configuration">Database Configuration</a></li>
+  <li><a href="https://github.com/wentdavid/hello-world#running-the-app">Running the App</a></li>
+  <li><a href="https://github.com/wentdavid/hello-world#dependencies">Dependencies</a></li>
+  <li><a href="https://github.com/wentdavid/hello-world#dependencies">Dependencies</a></li>
+  <li><a href="https://github.com/wentdavid/hello-world#license">License</a></li>
 </ul>
     
     <h2>Features</h2>
