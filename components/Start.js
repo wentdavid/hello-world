@@ -12,6 +12,8 @@ import {
   Platform,
 } from "react-native";
 
+import * as Animatable from "react-native-animatable";
+
 const backgroundColors = {
   black: { backgroundColor: "#000000" },
   grey: { backgroundColor: "#8a95a5" },
@@ -29,11 +31,11 @@ export default class Start extends React.Component {
 
   // The render function renders the components and styles of this app.
   render() {
-// This destructuring assignment extracts the background color styles from a variable called backgroundColors.
+    // This destructuring assignment extracts the background color styles from a variable called backgroundColors.
     const { black, grey, purple, green } = backgroundColors;
     const keyboardVerticalOffset = Platform.OS === "ios" ? 50 : 0; // adjust the offset for iOS devices
-// The return statement returns the JSX code for rendering the chat app UI.
-      return (
+    // The return statement returns the JSX code for rendering the chat app UI.
+    return (
       <View style={styles.container}>
         <KeyboardAvoidingView
           style={styles.innerContainer}
@@ -41,10 +43,12 @@ export default class Start extends React.Component {
           keyboardVerticalOffset={keyboardVerticalOffset}
         >
           <ImageBackground
-            source={require("../assets/background-image.png")}
+            source={require("../assets/background-image.gif")}
             style={[styles.container, styles.image]}
           >
-            <Text style={styles.title}>Chat App</Text>
+            <Animatable.Text style={styles.title} animation="pulse" duration={1000} iterationCount={2} iterationDelay={2000} >
+              hello-world
+            </Animatable.Text>
 
             <View style={styles.inputBox}>
               <TextInput
@@ -56,59 +60,61 @@ export default class Start extends React.Component {
               <View>
                 <Text style={styles.colorSelector}>Choose your background</Text>
                 <View style={styles.colorWrapper}>
-                {/* The TouchableOpacity component allows the user to select different background colors. */}
+                  {/* The TouchableOpacity component allows the user to select different background colors. */}
                   <TouchableOpacity
                     style={[
                       styles.color,
                       black,
-                    this.state.color === black.backgroundColor
-                      ? styles.colorSelected
-                      : {},
+                      this.state.color === black.backgroundColor
+                        ? styles.colorSelected
+                        : {},
                     ]}
-                  onPress={() =>
-                    this.setState({ color: black.backgroundColor })
-                  }
+                    onPress={() =>
+                      this.setState({ color: black.backgroundColor })
+                    }
                   />
 
                   <TouchableOpacity
                     style={[
                       styles.color,
                       grey,
-                    this.state.color === grey.backgroundColor
-                      ? styles.colorSelected
-                      : {},
+                      this.state.color === grey.backgroundColor
+                        ? styles.colorSelected
+                        : {},
                     ]}
-                    onPress={() => this.setState({ color: grey.backgroundColor })}
+                    onPress={() =>
+                      this.setState({ color: grey.backgroundColor })
+                    }
                   />
 
                   <TouchableOpacity
                     style={[
                       styles.color,
                       purple,
-                    this.state.color === purple.backgroundColor
-                      ? styles.colorSelected
-                      : {},
+                      this.state.color === purple.backgroundColor
+                        ? styles.colorSelected
+                        : {},
                     ]}
-                  onPress={() =>
-                    this.setState({ color: purple.backgroundColor })
-                  }
+                    onPress={() =>
+                      this.setState({ color: purple.backgroundColor })
+                    }
                   />
 
                   <TouchableOpacity
                     style={[
                       styles.color,
                       green,
-                    this.state.color === green.backgroundColor
-                      ? styles.colorSelected
-                      : {},
+                      this.state.color === green.backgroundColor
+                        ? styles.colorSelected
+                        : {},
                     ]}
-                  onPress={() =>
-                    this.setState({ color: green.backgroundColor })
-                  }
+                    onPress={() =>
+                      this.setState({ color: green.backgroundColor })
+                    }
                   />
                 </View>
               </View>
-            {/* The TouchableOpacity component allows the user to navigate to the chat screen. */}
+              {/* The TouchableOpacity component allows the user to navigate to the chat screen. */}
               <TouchableOpacity
                 style={[styles.nameBox, styles.chatBox]}
                 onPress={() =>
@@ -118,9 +124,9 @@ export default class Start extends React.Component {
                   })
                 }
               >
-              <Text style={[styles.colorSelector, styles.chatBoxText]}>
-                Start Chatting
-              </Text>
+                <Text style={[styles.colorSelector, styles.chatBoxText]}>
+                  Start Chatting
+                </Text>
               </TouchableOpacity>
             </View>
           </ImageBackground>
@@ -148,10 +154,10 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    color: "#fff",
+    color: "black",
     fontSize: 50,
-    fontWeight: "600",
-    marginTop: 60,
+    fontWeight: "200",
+    marginTop: 80,
   },
 
   inputBox: {
@@ -161,15 +167,26 @@ const styles = StyleSheet.create({
     width: "88%",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 20,
+    paddingVertical: 35,
+    paddingHorizontal: 10,
+    borderRadius: 30,
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 100,
   },
 
   nameBox: {
     height: 50,
     width: "88%",
-    borderColor: "grey",
+    borderColor: "rgba(0, 0, 0, 0.4)",
     borderWidth: 1,
-    borderRadius: 2,
+    borderRadius: 3,
     color: "#757083",
     opacity: 50,
     fontSize: 16,
@@ -197,13 +214,24 @@ const styles = StyleSheet.create({
   },
 
   chatBox: {
-    backgroundColor: "#757083",
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    borderRadius: 30,
     justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 100,
+    borderWidth: 0,
   },
 
   chatBoxText: {
     color: "#fff",
     fontWeight: "300",
+    paddingRight: 10,
   },
 
   colorSelected: {
