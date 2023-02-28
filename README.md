@@ -40,6 +40,76 @@
       navigate to the project directory in your terminal. Run the following
       command to install the project dependencies:
     </p>
+    <h2>Database Configuration</h2>
+    <h3>Firebase</h3>
+<p>This project uses Firebase, a platform for building web and mobile applications, to store and retrieve chat messages.</p>
+<p>The following Firebase services are used:</p>
+<ul>
+  <li><strong>Cloud Firestore</strong>: a flexible, scalable database for mobile, web, and server development.</li>
+  <li><strong>Authentication</strong>: a service that provides sign-up and sign-in functionality for your app.</li>
+</ul>
+<p>The chat messages are stored in a Cloud Firestore collection called <code>messages</code>, which has the following fields:</p>
+<ul>
+  <li><code>uid</code>: the user ID of the person who sent the message.</li>
+  <li><code>_id</code>: a unique identifier for the message.</li>
+  <li><code>text</code>: the text content of the message.</li>
+  <li><code>createdAt</code>: the timestamp of when the message was sent.</li>
+  <li><code>user</code>: an object containing information about the user who sent the message, including their user ID, name, and avatar image URL.</li>
+  <li><code>image</code>: an optional URL of an image sent with the message.</li>
+  <li><code>location</code>: an optional object containing latitude and longitude values for the user's current location.</li>
+</ul>
+<p>When a message is sent, it is added to the <code>messages</code> collection in Firestore using the <code>add()</code> method. The <code>onSnapshot()</code> method is used to listen for updates to the collection in real time and update the UI accordingly.</p>
+<p>Authentication is used to allow anonymous users to sign in to the app and send messages. When a user signs in anonymously, they are assigned a unique user ID that is stored in the <code>uid</code> field of the <code>messages</code> collection. This allows messages to be associated with the user who sent them even though the user is anonymous.</p>
+<p>To configure the database in this chat application, we are using Firebase Firestore.</p>
+<p>First, we initialize the Firebase app with our project's API keys and configuration details:</p>
+<pre>
+const firebase = require("firebase");
+require("firebase/firestore");
+
+if (!firebase.apps.length) {
+  firebase.initializeApp({
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  });
+}
+</pre>
+<p>Next, we create a reference to the Firestore collection that we will be using to store our chat messages:</p>
+<pre>
+this.referenceChatMessages = firebase.firestore().collection("messages");
+</pre>
+<p>When a new message is added to the chat, we can use the following code to add the message to the Firestore collection:</p>
+<pre>
+const message = this.state.messages[0];
+this.referenceChatMessages.add({
+  uid: this.state.uid,
+  _id: message._id,
+  text: message.text || "",
+  createdAt: message.createdAt,
+  user: message.user,
+  image: message.image || null,
+  location: message.location || null,
+});
+</pre>
+<p>We can also use the following code to retrieve the chat messages from the Firestore collection:</p>
+<pre>
+this.unsubscribe = this.referenceChatMessages
+  .orderBy("createdAt", "desc")
+  .onSnapshot(this.onCollectionUpdate, (error) => {
+    console.log("Snapshot", error);
+});
+</pre>
+<p>And finally, when the component unmounts, we can use the following code to unsubscribe from the Firestore collection:</p>
+<pre>
+if (this.isConnected) {
+  this.unsubscribe();
+  this.authUnsubscribe();
+}
+</pre>
+<p>By using Firebase Firestore, we can easily store and retrieve our chat messages in real-time, making it a great choice for building chat applications.</p>
     <pre>npm install</pre>
     <h2>Running the App</h2>
     <p>
