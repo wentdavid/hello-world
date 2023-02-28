@@ -3,13 +3,18 @@
   <body>
     <h1>React Native Chat App</h1>
     <p>
-           This is a mobile chat app built with React Native and Firebase. It allows users to sign in with their name, choose a background color, and chat with other users in real-time. The app also has features for sending images and locations, and it works offline with local storage.
+           This is a mobile chat app built with React Native and Firebase. It allows users to sign in with their name, choose a background color, and chat with other users in real-time. The app also has features for sending images and locations, and it works offline with local storage.![ezgif-4-c2edbb83dd](https://user-images.githubusercontent.com/112701190/221925934-9e3f2c18-ac84-4dfd-bf28-6d11fa5650d0.gif)
+
     </p>
     <h2>Features</h2>
     <ul>
-    <li>Real-time chat between users
+    <li>Real-time chat between users</li>
+    ![IMG_1803](https://user-images.githubusercontent.com/112701190/221925974-14e853e0-cbd7-487b-9704-4e2781479b03.PNG)
+
     <li>Send and receive images</li>
     <li>Send and receive location</li>
+    ![IMG_1804](https://user-images.githubusercontent.com/112701190/221926204-8e17fd56-9838-47e4-ba06-a256f7298aea.PNG)
+
     <li>Offline mode (view previous messages while offline)</li>
     <li>Anonymous authentication with Firebase</li>
     </ul>
