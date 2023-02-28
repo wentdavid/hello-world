@@ -3,11 +3,16 @@
   <body>
     <h1>React Native Chat App</h1>
     <p>
-      This is a simple chat app built using React Native. The app allows users
-      to start a chat conversation and continue the conversation with
-      text messages. The app uses react Navigation for screen navigation and
-      react-native-gesture-handler for gesture recognition.
+           This is a mobile chat app built with React Native and Firebase. It allows users to sign in with their name, choose a background color, and chat with other users in real-time. The app also has features for sending images and locations, and it works offline with local storage.
     </p>
+    <h2>Features</h2>
+    <ul>
+    <li>Real-time chat between users
+    <li>Send and receive images</li>
+    <li>Send and receive location</li>
+    <li>Offline mode (view previous messages while offline)</li>
+    <li>Anonymous authentication with Firebase</li>
+    </ul>
     <h2>User Stories</h2>
     <ul>
       <li>As a new user, I want to be able to easily enter a chat room so I can quickly start talking to my friends and family</li>
@@ -50,37 +55,21 @@
       use Android Studio to test the app on an Android emulator or physical
       device.
     </p>
-    <h2>File Structure</h2>
-    <p>
-      The app is structured as follows:
-    </p>
-    <ul>
-      <li>
-        <code>App.js</code>: The main entry point of the app, which sets up the
-        navigation using <code>react-navigation</code>.
-      </li>
-      <li>
-        <code>components/Start.js</code>: The start screen of the app, which
-        displays a button to start the chat.
-      </li>
-      <li>
-        <code>components/Chat.js</code>: The chat screen of the app, which
-        allows users to send messages to the chatbot and receive responses.
-      </li>
-    </ul>
     <h2>Dependencies</h2>
-    <p>
-      The app uses the following dependencies:
-    </p>
     <ul>
-      <li>
-        <code>react-navigation</code>: A library for handling navigation between
-        screens in a React Native app.
-      </li>
-      <li>
-        <code>react-native-gesture-handler</code>: A library for gesture
-        recognition in a React Native app.
-      </li>
+      <li>React Native</li>
+      <li>Firebase</li>
+      <li>Gifted Chat</li>
+      <li>Expo</li>
+      <li>NetInfo</li>
+      <li>Async Storage</li>
+      <li>React Native Maps</li>
+      <li>React Native Gesture Handler</li>
+      <li>Expo Permissions</li>
+      <li>Expo Image Picker</li>
+      <li>Expo Location</li>
+      <li>React Native Action Sheet</li>
+      <li>Prop Types</li>
     </ul>
     <h2>Contributing</h2>
     <p>
@@ -90,7 +79,7 @@
     </p>
     <h2>License</h2>
     <p>
-      This project is licensed under the MIT License. See the <code>LICENSE</code> file for more details.
+      This project is licensed under the MIT License.
     </p>
   </body>
 </html>
