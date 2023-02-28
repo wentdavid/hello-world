@@ -6,13 +6,12 @@ import {
   Text,
   StyleSheet,
 } from "react-native";
-import { GiftedChat, Bubble, InputToolbar, SystemMessage } from "react-native-gifted-chat";
+import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
 import MapView from "react-native-maps";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import CustomActions from "./CustomActions";
-import { getMessages, saveMessages, deleteMessages } from "../helpers/asyncStorage";
-
 
 const firebase = require("firebase");
 require("firebase/firestore");
@@ -53,18 +52,22 @@ export default class Chat extends React.Component {
     this.referenceChatMessages = firebase.firestore().collection("messages");
   }
 
-  async componentDidMount() {
-    let name = this.props.route.params.name;
-    this.props.navigation.setOptions({ title: name });
-
+  async getMessages() {
+    let messages = "";
     try {
-      const messages = await getMessages();
+      messages = (await AsyncStorage.getItem("messages")) || [];
       this.setState({
-        messages: messages,
+        messages: JSON.parse(messages),
       });
     } catch (error) {
-      console.log("Error getting messages", error);
+      console.log("Get Message -> ", error);
     }
+  }
+
+  componentDidMount() {
+    let name = this.props.route.params.name;
+    this.props.navigation.setOptions({ title: name });
+    this.getMessages();
 
     NetInfo.fetch().then((connection) => {
       if (connection.isConnected) {
@@ -85,7 +88,7 @@ export default class Chat extends React.Component {
             user: {
               _id: user.uid,
               name: name,
-              avatar: "https://placeimg.com/140/140/any",
+              avatar: "",
             },
             loggedInText: "",
           });
@@ -102,9 +105,45 @@ export default class Chat extends React.Component {
           system: true,
         };
 
+        this.getMessages();
+        this.getUser();
         this.setState({ isConnected: false });
       }
     });
+  }
+
+  async saveMessages() {
+    try {
+      await AsyncStorage.setItem(
+        "messages",
+        JSON.stringify(this.state.messages)
+      );
+    } catch (error) {
+      console.log("Save Message -> ", error);
+    }
+  }
+
+  async deleteMessages() {
+    try {
+      await AsyncStorage.removeItem("messages");
+      this.setState({
+        messages: [],
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  onSend(messages = []) {
+    this.setState(
+      (previousState) => ({
+        messages: GiftedChat.append(previousState.messages, messages),
+      }),
+      () => {
+        this.addMessage();
+        this.saveMessages();
+      }
+    );
   }
 
   addMessage = () => {
@@ -125,6 +164,7 @@ export default class Chat extends React.Component {
     const messages = [];
     querySnapshot.forEach((doc) => {
       let data = doc.data();
+      console.log("onCollectionUpdate", data.user.avatar);
       messages.push({
         _id: data._id,
         text: data.text,
@@ -132,7 +172,7 @@ export default class Chat extends React.Component {
         user: {
           _id: data.user._id,
           name: data.user.name,
-          avatar: data.user.avatar || "",
+          avatar: data.user.avatar || `https://placeimg.com/140/140/any`,
         },
         image: data.image || null,
         location: data.location || null,
@@ -150,23 +190,10 @@ export default class Chat extends React.Component {
     }
   }
 
-  onSend(messages = []) {
-    this.setState(
-      (previousState) => ({
-        messages: GiftedChat.append(previousState.messages, messages),
-      }),
-      async () => {
-        await saveMessages(this.state.messages);
-        this.addMessage();
-      }
-    );
-  }
-
   renderSystemMessage(props) {
     if (!this.state.isConnected) {
       return <SystemMessage {...props} textStyle={styles.systemMessage} />;
     } else {
-      return null;
     }
   }
 
@@ -195,6 +222,13 @@ export default class Chat extends React.Component {
     );
   }
 
+  renderSystemMessage(props) {
+    if (!this.state.isConnected) {
+      return <SystemMessage {...props} textStyle={styles.systemMessage} />;
+    } else {
+    }
+  }
+
   renderCustomActions = (props) => <CustomActions {...props} />;
 
   renderCustomView(props) {
@@ -219,6 +253,7 @@ export default class Chat extends React.Component {
     let color = this.props.route.params.color;
     let name = this.props.route.params.name;
     this.props.navigation.setOptions({ title: name });
+
     return (
       <ActionSheetProvider>
         <View style={[styles.container, { backgroundColor: color }]}>
@@ -228,8 +263,11 @@ export default class Chat extends React.Component {
             renderSystemMessage={this.renderSystemMessage.bind(this)}
             renderBubble={this.renderBubble.bind(this)}
             renderActions={this.renderCustomActions}
-            renderCustomView={this.renderCustomView}
+            renderCustomView={this.renderCustomView.bind(this)}
             renderInputToolbar={this.renderInputToolbar.bind(this)}
+            bottomOffset={35}
+            /* minInputToolbarHeight={10} */
+            renderAvatarOnTop={true}
             showAvatarForEveryMessage={true}
             renderUsernameOnMessage={true}
             messages={
@@ -238,11 +276,12 @@ export default class Chat extends React.Component {
                 : [offlineAlert, ...this.state.messages]
             }
             onSend={(messages) => this.onSend(messages)}
-            user={{ _id: this.state.uid }}
+            user={{
+              _id: this.state.user._id,
+              name: this.state.user.name,
+              avatar: `https://placeimg.com/140/140/any`,
+            }}
             isConnected={this.state.isConnected}
-            accessible={true}
-            accessibilityLabel="Chat text input field"
-            accessibilityHint='Enter your message here and press "Send" on the right to send your message '
           />
           {Platform.OS === "android" ? (
             <KeyboardAvoidingView behavior="height" />
@@ -258,5 +297,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-
-
