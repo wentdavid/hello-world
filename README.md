@@ -14,7 +14,6 @@
   <li><a href="https://github.com/wentdavid/hello-world#dependencies">Dependencies</a></li>
   <li><a href="https://github.com/wentdavid/hello-world#license">License</a></li>
 </ul>
-    
     <h2>Features</h2>
     <ul>
     <li>Real-time chat between users</li>
